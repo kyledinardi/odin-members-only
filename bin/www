@@ -4,7 +4,7 @@
  * Module dependencies.
  */
 
-const debug = require('debug')('odin-inventory-application:server');
+const debug = require('debug')('odin-members-only:server');
 const http = require('http');
 const app = require('../app');
 
