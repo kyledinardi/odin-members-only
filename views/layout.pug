@@ -6,4 +6,15 @@ html(lang="en")
     title= title
     link(rel='stylesheet', href='/stylesheets/style.css')
   body
+    nav 
+      a(href="/") 
+        button Home
+      if currentUser 
+        a(href="/logout")
+          button Logout
+      else
+        a(href="/login")
+          button Login
+        a(href="/sign-up") 
+          button Sign Up
     block content
