@@ -10,11 +10,15 @@ html(lang="en")
       a(href="/") 
         button Home
       if currentUser 
+        if !currentUser.membershipStatus
+          a(href="/join-club")
+            button Join Club
         a(href="/logout")
-          button Logout
+          button Log Out
       else
         a(href="/login")
-          button Login
+          button Log In
         a(href="/sign-up") 
           button Sign Up
-    block content
+    main
+      block content

@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
+const passport = require('passport');
 const User = require('../models/user');
 
 exports.signUpGet = (req, res, next) => {
@@ -73,6 +74,60 @@ exports.signUpPost = [
         await user.save();
         res.redirect('/');
       });
+    }
+  }),
+];
+
+exports.loginGet = (req, res, next) => {
+  res.render('login', {
+    title: 'Login',
+    currentUser: req.user,
+  });
+};
+
+exports.loginPost = passport.authenticate('local', {
+  successRedirect: '/',
+  failureRedirect: '/login',
+});
+
+exports.logout = (req, res, next) => {
+  req.logout((err) => {
+    if (err) {
+      next(err);
+    } else {
+      res.redirect('/');
+    }
+  });
+};
+
+exports.joinClubGet = (req, res, next) => {
+  res.render('joinClub', {
+    title: 'Join Club',
+    currentUser: req.user,
+  });
+};
+
+exports.joinClubPost = [
+  body('secretCode')
+    .trim()
+    .isLength({ min: 1 })
+    .escape()
+    .withMessage('Secret code must not be empty')
+    .custom((value) => value === process.env.SECRET_CODE)
+    .withMessage('Incorrect secret code'),
+
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      res.render('joinClub', {
+        title: 'Join Club',
+        currentUser: req.user,
+        errors: errors.array(),
+      });
+    } else {
+      await User.findByIdAndUpdate(req.user.id, { membershipStatus: true }, {});
+      res.redirect('/');
     }
   }),
 ];
