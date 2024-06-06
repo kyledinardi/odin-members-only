@@ -58,18 +58,42 @@ exports.newMessage = [
     } else {
       const currentUserMessages = req.user.messages;
       currentUserMessages.push(message._id);
-      await message.save();
 
-      await User.findByIdAndUpdate(
-        req.user._id,
-        {
-          messages: currentUserMessages,
-          _id: req.user._id,
-        },
-        {},
-      );
-      
+      await Promise.all([
+        message.save(),
+        User.findByIdAndUpdate(
+          req.user._id,
+          {
+            messages: currentUserMessages,
+            _id: req.user._id,
+          },
+          {},
+        ),
+      ]);
+
       res.redirect('/');
     }
   }),
 ];
+
+exports.deleteMessage = asyncHandler(async (req, res, next) => {
+  const users = await User.find({}, 'messages').exec();
+  let userWithMessage;
+  let newUserMessages;
+
+  users.forEach((user) => {
+    if (user.messages.includes(req.body.messageId)) {
+      userWithMessage = user._id;
+      newUserMessages = [...user.messages];
+      const i = newUserMessages.indexOf(req.body.messageId);
+      newUserMessages.splice(i, 1);
+    }
+  });
+
+  await Promise.all([
+    Message.findByIdAndDelete(req.body.messageId),
+    User.findByIdAndUpdate(userWithMessage, { messages: newUserMessages }, {}),
+  ]);
+  
+  res.redirect('/');
+});

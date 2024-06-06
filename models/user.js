@@ -7,6 +7,7 @@ const UserSchema = new Schema({
   password: { type: String, required: true },
   membershipStatus: { type: Boolean, required: true },
   messages: [{ type: Schema.Types.ObjectId, ref: 'Message' }],
+  admin: { type: Boolean },
 });
 
 UserSchema.virtual('fullName').get(function cb() {

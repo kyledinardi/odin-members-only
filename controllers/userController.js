@@ -72,6 +72,12 @@ exports.signUpPost = [
         });
 
         await user.save();
+
+        passport.authenticate('local', {
+          successRedirect: '/',
+          failureRedirect: '/login',
+        });
+
         res.redirect('/');
       });
     }
@@ -101,7 +107,7 @@ exports.logout = (req, res, next) => {
 };
 
 exports.joinClubGet = (req, res, next) => {
-  res.render('joinClub', {
+  res.render('secretCode', {
     title: 'Join Club',
     currentUser: req.user,
   });
@@ -120,7 +126,7 @@ exports.joinClubPost = [
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      res.render('joinClub', {
+      res.render('secretCode', {
         title: 'Join Club',
         currentUser: req.user,
         errors: errors.array(),
@@ -131,6 +137,47 @@ exports.joinClubPost = [
         { membershipStatus: true, _id: req.user._id },
         {},
       );
+      res.redirect('/');
+    }
+  }),
+];
+
+exports.adminGet = (req, res, next) => {
+  res.render('secretCode', {
+    title: 'Become Admin',
+    currentUser: req.user,
+  });
+};
+
+exports.adminPost = [
+  body('secretCode')
+    .trim()
+    .isLength({ min: 1 })
+    .escape()
+    .withMessage('Secret code must not be empty')
+    .custom((value) => value === process.env.ADMIN_CODE)
+    .withMessage('Incorrect secret code'),
+
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      res.render('secretCode', {
+        title: 'Become Admin',
+        currentUser: req.user,
+        errors: errors.array(),
+      });
+    } else {
+      await User.findByIdAndUpdate(
+        req.user._id,
+        {
+          membershipStatus: true,
+          admin: true,
+          _id: req.user._id,
+        },
+        {},
+      );
+
       res.redirect('/');
     }
   }),

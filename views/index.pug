@@ -21,4 +21,9 @@ block content
             h4= user.fullName
       h4= message.title
         span.timestamp= new Intl.DateTimeFormat().format(message.timestamp)
-      p= message.text
+      p= message.text 
+      if currentUser
+        if currentUser.admin 
+          form(action="/delete-message", method="post") 
+            input(type="hidden", name='messageId', value=message._id)
+            button(type="submit") Delete

@@ -13,6 +13,9 @@ html(lang="en")
         if !currentUser.membershipStatus
           a(href="/join-club")
             button Join Club
+        if !currentUser.admin
+          a(href="/admin")
+            button Become Admin 
         a(href="/logout")
           button Log Out
       else
