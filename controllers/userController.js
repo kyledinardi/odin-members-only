@@ -72,13 +72,13 @@ exports.signUpPost = [
         });
 
         await user.save();
-
-        passport.authenticate('local', {
-          successRedirect: '/',
-          failureRedirect: '/login',
+        req.login(user, (error) => {
+          if (!error) {
+            res.redirect('/');
+          } else {
+            next(err);
+          }
         });
-
-        res.redirect('/');
       });
     }
   }),
@@ -86,7 +86,7 @@ exports.signUpPost = [
 
 exports.loginGet = (req, res, next) => {
   res.render('login', {
-    title: 'Login',
+    title: 'Log In',
     currentUser: req.user,
   });
 };
