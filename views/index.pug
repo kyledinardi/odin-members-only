@@ -6,9 +6,9 @@ block content
     form(action="/new-message", method="post") 
       .fields
         label(for="title") Message Title: 
-        input#title(type="text", name="title", required)
+        input#title(type="text", name="title", required, value=(messageTitle === undefined ? '' : messageTitle))
         label(for="messageBody") Message Body: 
-        textarea#messageBody(name="messageBody", cols="30", rows="10", required)
+        textarea#messageBody(name="messageBody", cols="30", rows="10", required) #{messageBody === undefined ? '' : messageBody}
       button(type="submit") Post
 
   else 
@@ -20,5 +20,5 @@ block content
           if user.messages.includes(message._id)
             h4= user.fullName
       h4= message.title
-        span.timestamp= message.timestamp
+        span.timestamp= new Intl.DateTimeFormat().format(message.timestamp)
       p= message.text

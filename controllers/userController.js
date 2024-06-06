@@ -126,7 +126,11 @@ exports.joinClubPost = [
         errors: errors.array(),
       });
     } else {
-      await User.findByIdAndUpdate(req.user.id, { membershipStatus: true }, {});
+      await User.findByIdAndUpdate(
+        req.user._id,
+        { membershipStatus: true, _id: req.user._id },
+        {},
+      );
       res.redirect('/');
     }
   }),
