@@ -1,14 +1,86 @@
 body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
+  background-color: #3572ef;
+}
+
+nav {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+  background-color: #050c9c;
+}
+
+button {
+  font-size: 1rem;
+  background-color: #a7e6ff;
+  border-radius: 5px;
+  border: black 1px solid;
+  padding: 5px 10px;
 }
 
 main {
-  margin: 30px;
+  margin: 30px auto;
+  padding: 30px;
+  border-radius: 10px;
+  background-color: #3abef9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: max-content;
+}
+
+h1 {
+  text-align: center;
+  margin-top: 0;
 }
 
 .fields {
   display: grid;
   grid-template-columns: max-content max-content;
   gap: 10px;
+  margin-bottom: 20px;
+  justify-content: center;
+}
+
+label {
+  text-align: right;
+}
+
+textarea {
+  font-family: Arial, Helvetica, sans-serif;
+  resize: none;
+}
+
+button[type='submit'] {
+  margin: auto;
+  display: block;
+}
+
+.messages {
+  margin: auto;
+}
+
+.message-card {
+  max-width: 600px;
+  background-color: #a7e6ff;
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.message-card h4 {
+  margin-top: 0;
+}
+
+.message-card p {
+  border: #050c9c 1px solid;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 0;
+}
+
+.timestamp {
+  font-size: 0.9rem;
 }

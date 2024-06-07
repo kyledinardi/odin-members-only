@@ -13,17 +13,18 @@ block content
 
   else 
     h2 Sign up or log in to post a message.
-  each message in messages 
-    .message 
-      if currentUser 
-        each user in users
-          if user.messages.includes(message._id)
-            h4= user.fullName
-      h4= message.title
-        span.timestamp= new Intl.DateTimeFormat().format(message.timestamp)
-      p= message.text 
-      if currentUser
-        if currentUser.admin 
-          form(action="/delete-message", method="post") 
-            input(type="hidden", name='messageId', value=message._id)
-            button(type="submit") Delete
+  .messages
+    each message in messages 
+      .message-card
+        if currentUser 
+          each user in users
+            if user.messages.includes(message._id)
+              h4= user.fullName
+        h4= message.title
+          span.timestamp= ` (${new Intl.DateTimeFormat('en-US', {dateStyle: 'short', timeStyle: 'short'}).format(message.timestamp)})`
+        p= message.text 
+        if currentUser
+          if currentUser.admin 
+            form(action="/delete-message", method="post") 
+              input(type="hidden", name='messageId', value=message._id)
+              button(type="submit") Delete
