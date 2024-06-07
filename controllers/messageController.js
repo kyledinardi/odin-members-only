@@ -9,6 +9,8 @@ exports.index = asyncHandler(async (req, res, next) => {
     Message.find().sort({ timestamp: 1 }).exec(),
   ]);
 
+  console.log(req.user);
+
   res.render('index', {
     title: 'Members Only',
     currentUser: req.user,
@@ -94,6 +96,6 @@ exports.deleteMessage = asyncHandler(async (req, res, next) => {
     Message.findByIdAndDelete(req.body.messageId),
     User.findByIdAndUpdate(userWithMessage, { messages: newUserMessages }, {}),
   ]);
-  
+
   res.redirect('/');
 });

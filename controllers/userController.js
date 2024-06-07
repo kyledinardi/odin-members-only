@@ -5,6 +5,7 @@ const passport = require('passport');
 const User = require('../models/user');
 
 exports.signUpGet = (req, res, next) => {
+  console.log(req.user)
   res.render('signUp', {
     title: 'Sign Up',
     currentUser: req.user,
