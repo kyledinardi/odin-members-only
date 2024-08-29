@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+  </head>
+  <body>
+    <nav>
+      <a href="/"><button>Home</button></a>
+      <% if (locals.currentUser) { if (!currentuser.is_member) { %>
+      <a href="/join-club"><button>Join Club</button></a>
+      <% } if (!currentUser.is_admin) { %>
+      <a href="/admin"><button>Become Admin</button></a>
+      <% } %>
+      <a href="/logout"><button>Log Out</button></a>
+      <% } else { %>
+      <a href="/login"><button>Log In</button></a>
+      <a href="/sign-up"><button>Sign Up</button></a>
+      <% } %>
+    </nav>
+    <main>
+      <h1><%= title %></h1>
+      <form method="post">
+        <div class="fields">
+          <label for="username">Username: </label>
+          <input type="text" name="username" id="username" required />
+          <label for="password">Password: </label>
+          <input type="password" name="password" id="password" required />
+        </div>
+        <button>Log In</button>
+      </form>
+    </main>
+  </body>
+</html>

@@ -4,7 +4,6 @@ const messageController = require('../controllers/messageController');
 
 const router = express.Router();
 
-/* GET home page. */
 router.get('/', messageController.index);
 router.post('/new-message', messageController.newMessage);
 router.post('/delete-message', messageController.deleteMessage);
