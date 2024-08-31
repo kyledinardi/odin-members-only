@@ -97,6 +97,7 @@ exports.logout = (req, res, next) => {
     if (err) {
       return next(err);
     }
+
     return res.redirect('/');
   });
 };

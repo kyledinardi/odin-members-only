@@ -35,14 +35,38 @@ const fillUsers = `
       is_Member,
       is_Admin
     )
-  VALUES ('John', 'Doe', '1', $1, 'true', 'true'),
-    ('Joe', 'Schmo', '2', $1, 'false', 'false');
+  VALUES (
+      'John',
+      'Doe',
+      '1',
+      $2a$10$TRqezF4Iw7NROR6ajlX5lOrIejFdoq0KYWbsbi77KVKLF9JhzLGVO,
+      'true',
+      'true'
+    ),
+    (
+      'Joe',
+      'Schmo',
+      '2',
+      $2a$10$TRqezF4Iw7NROR6ajlX5lOrIejFdoq0KYWbsbi77KVKLF9JhzLGVO,
+      'false',
+      'false'
+    );
 `;
 
 const fillMessages = `
   INSERT INTO messages (user_id, title, timestamp, text)
-  VALUES (1, 'Hello', $1, 'world'),
-    (2, 'Goodbye', $1, 'everyone');
+  VALUES (
+      1,
+      'Hello',
+      '2024-08-31 11:29:37.371-04',
+      'world'
+    ),
+    (
+      2,
+      'Goodbye',
+      '2024-08-31 11:29:37.371-04',
+      'everyone'
+    );
 `;
 
 async function main() {
