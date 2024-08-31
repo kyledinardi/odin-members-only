@@ -2,55 +2,47 @@ const asyncHandler = require('express-async-handler');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const passport = require('passport');
-const User = require('../models/user');
+const db = require('../db/queries');
 
 exports.signUpGet = (req, res, next) => {
-  console.log(req.user)
-  res.render('signUp', {
-    title: 'Sign Up',
-    currentUser: req.user,
-  });
+  if (req.user) {
+    return res.redirect('/');
+  }
+
+  return res.render('signUp', { title: 'Sign Up' });
 };
 
 exports.signUpPost = [
   body('firstName')
     .trim()
-    .isLength({ min: 1 })
-    .escape()
+    .notEmpty()
     .withMessage('First name must not be empty'),
-  body('lastName')
+
+  body('lastName').trim().notEmpty().withMessage('Last name must not be empty'),
+
+  body('username')
     .trim()
-    .isLength({ min: 1 })
-    .escape()
-    .withMessage('Last name must not be empty'),
-  asyncHandler(
-    body('username')
-      .trim()
-      .isLength({ min: 1 })
-      .escape()
-      .withMessage('Username must not be empty')
-      .custom(async (value) => {
-        const userInDatabase = await User.find({ username: value }).exec();
-        return !userInDatabase;
-      })
-      .withMessage('Username taken'),
-  ),
-  body('password')
-    .trim()
-    .isLength({ min: 1 })
-    .escape()
-    .withMessage('Password must not be empty'),
+    .notEmpty()
+    .withMessage('Username must not be empty')
+    .custom(async (value) => {
+      const existingUser = await db.getUserByUsername(value);
+
+      if (existingUser) {
+        throw new Error('Username already in use');
+      }
+    }),
+
+  body('password').trim().notEmpty().withMessage('Password must not be empty'),
+
   body('passwordConfirmation')
     .trim()
-    .escape()
     .custom((value, { req }) => value === req.body.password)
     .withMessage('Passwords did not match'),
 
   asyncHandler(async (req, res, next) => {
     const errors = validationResult(req);
-
     if (!errors.isEmpty()) {
-      res.render('signUp', {
+      return res.render('signUp', {
         title: 'Sign Up',
         currentUser: req.user,
         firstName: req.body.firstName,
@@ -58,38 +50,41 @@ exports.signUpPost = [
         username: req.body.username,
         errors: errors.array(),
       });
-    } else {
-      bcrypt.hash(req.body.password, 10, async (err, hashedPassword) => {
-        if (err) {
-          throw new Error(err);
+    }
+
+    return bcrypt.hash(req.body.password, 10, async (err, hashedPassword) => {
+      if (err) {
+        throw new Error(err);
+      }
+
+      const user = {
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        username: req.body.username,
+        password: hashedPassword,
+        isMember: false,
+        isAdmin: false,
+      };
+      const userId = await db.createUser(user);
+      user.id = userId;
+
+      req.login(user, (error) => {
+        if (!error) {
+          return res.redirect('/');
         }
 
-        const user = new User({
-          firstName: req.body.firstName,
-          lastName: req.body.lastName,
-          username: req.body.username,
-          password: hashedPassword,
-          membershipStatus: false,
-        });
-
-        await user.save();
-        req.login(user, (error) => {
-          if (!error) {
-            res.redirect('/');
-          } else {
-            next(err);
-          }
-        });
+        return next(error);
       });
-    }
+    });
   }),
 ];
 
 exports.loginGet = (req, res, next) => {
-  res.render('login', {
-    title: 'Log In',
-    currentUser: req.user,
-  });
+  if (req.user) {
+    return res.redirect('/');
+  }
+
+  return res.render('login', { title: 'Log In' });
 };
 
 exports.loginPost = passport.authenticate('local', {
@@ -100,15 +95,18 @@ exports.loginPost = passport.authenticate('local', {
 exports.logout = (req, res, next) => {
   req.logout((err) => {
     if (err) {
-      next(err);
-    } else {
-      res.redirect('/');
+      return next(err);
     }
+    return res.redirect('/');
   });
 };
 
 exports.joinClubGet = (req, res, next) => {
-  res.render('secretCode', {
+  if (!req.user) {
+    return res.redirect('/login');
+  }
+
+  return res.render('secretCode', {
     title: 'Join Club',
     currentUser: req.user,
   });
@@ -117,8 +115,7 @@ exports.joinClubGet = (req, res, next) => {
 exports.joinClubPost = [
   body('secretCode')
     .trim()
-    .isLength({ min: 1 })
-    .escape()
+    .notEmpty()
     .withMessage('Secret code must not be empty')
     .custom((value) => value === process.env.SECRET_CODE)
     .withMessage('Incorrect secret code'),
@@ -127,24 +124,24 @@ exports.joinClubPost = [
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      res.render('secretCode', {
+      return res.render('secretCode', {
         title: 'Join Club',
         currentUser: req.user,
         errors: errors.array(),
       });
-    } else {
-      await User.findByIdAndUpdate(
-        req.user._id,
-        { membershipStatus: true, _id: req.user._id },
-        {},
-      );
-      res.redirect('/');
     }
+
+    await db.updateUserMembership(req.user.id);
+    return res.redirect('/');
   }),
 ];
 
 exports.adminGet = (req, res, next) => {
-  res.render('secretCode', {
+  if (!req.user) {
+    return res.redirect('/login');
+  }
+
+  return res.render('secretCode', {
     title: 'Become Admin',
     currentUser: req.user,
   });
@@ -153,8 +150,7 @@ exports.adminGet = (req, res, next) => {
 exports.adminPost = [
   body('secretCode')
     .trim()
-    .isLength({ min: 1 })
-    .escape()
+    .notEmpty()
     .withMessage('Secret code must not be empty')
     .custom((value) => value === process.env.ADMIN_CODE)
     .withMessage('Incorrect secret code'),
@@ -163,23 +159,13 @@ exports.adminPost = [
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      res.render('secretCode', {
+      return res.render('secretCode', {
         title: 'Become Admin',
         currentUser: req.user,
         errors: errors.array(),
       });
-    } else {
-      await User.findByIdAndUpdate(
-        req.user._id,
-        {
-          membershipStatus: true,
-          admin: true,
-          _id: req.user._id,
-        },
-        {},
-      );
-
-      res.redirect('/');
     }
+    await db.updateUserAdminStatus(req.user.id);
+    return res.redirect('/');
   }),
 ];
